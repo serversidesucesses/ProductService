@@ -1,4 +1,5 @@
 
+DROP INDEX IF EXISTS product_id_index, styles_id_index, features_id_index, photos_id_index, skus_id_index, related_id_index;
 DROP TABLE IF EXISTS products, styles, product_features, skus, photos, related_products CASCADE;
 --id,name,slogan,description,category,default_price
 CREATE TABLE products (
@@ -45,6 +46,19 @@ CREATE TABLE related_products (
   current_product_id int references products(id),
   related_product_id int
 );
+
+CREATE INDEX product_id_index
+  ON  products(id);
+CREATE INDEX styles_id_index
+  ON  styles(productId);
+CREATE INDEX features_id_index
+  ON product_features(product_id);
+CREATE INDEX photos_id_index
+  ON photos(styleId);
+CREATE INDEX skus_id_index
+  ON skus(styleId);
+CREATE INDEX related_id_index
+  ON related_products(current_product_id);
 
 COPY products FROM '/Users/c/Desktop/Hack Reactor/SDC/ProductService/DATA/product.csv' csv header;
 COPY styles (id,productId,name,sale_price,original_price,default_style) FROM '/Users/c/Desktop/Hack Reactor/SDC/ProductService/DATA/styles.csv' csv header;

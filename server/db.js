@@ -1,9 +1,10 @@
-const { Pool } = require('pg')
+require('dotenv');
+const { Pool } = require('pg');
 const pool = new Pool({
-  user: 'c',
-  host: 'localhost',
-  database: 'products',
-  port: 5432,
+  user: process.env.DB_USERNAME,
+  host: process.env.DB_HOSTNAME,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 5432,
 })
 const getProducts = (req, res) => {
   const page = parseInt(req.query.page) || 1;

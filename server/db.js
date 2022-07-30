@@ -47,9 +47,16 @@ const getProductStyles = (req, res) => {
   .catch(error => res.status(500).json(error));
 }
 
+const getRelatedProducts = (req, res) => {
+  const id = parseInt(req.params.product_id);
+  pool.query(`SELECT json_agg(related_product_id) AS related_products FROM related_products WHERE current_product_id = $1`, [id])
+  .then(({rows}) => res.status(200).json(rows[0].related_products))
+  .catch(error => res.status(500).json(error));
+}
 
 module.exports = {
   getProducts,
   getProductInfoById,
-  getProductStyles
+  getProductStyles,
+  getRelatedProducts
 }

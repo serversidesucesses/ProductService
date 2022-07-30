@@ -9,7 +9,7 @@ const pool = new Pool({
 const getProducts = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const count = parseInt(req.query.count) || 5;
-  pool.query(`SELECT * FROM products ORDER BY id ASC LIMIT $1 OFFSET $2`, [count, count*(page - 1)])
+  pool.query(`SELECT name, slogan, description, category, concat(default_price, '.00') AS default_price FROM products ORDER BY id ASC LIMIT $1 OFFSET $2`, [count, count*(page - 1)])
   .then(({rows}) => res.status(200).json(rows))
   .catch(error => res.status(500).send('Internal Server Error'));
 }
@@ -18,12 +18,12 @@ const getProducts = (req, res) => {
 const getProductInfoById = (req, res) => {
   const id = parseInt(req.params.product_id)
   pool.query(
-  `WITH product AS (
-  SELECT products.id, name, slogan, description, category, default_price,
+ `WITH product AS (
+  SELECT products.id, name, slogan, description, category, concat(default_price, '.00') AS default_price,
     (
       CASE
          WHEN products.id = $1 AND feature.product_id = $1
-         THEN (json_agg(json_build_object('feature', feature, 'value', value)))
+           THEN (json_agg(json_build_object('feature', feature, 'value', value)))
          ELSE '[]'
       END
     ) AS features
@@ -41,9 +41,17 @@ const getProductStyles = (req, res) => {
   const id = parseInt(req.params.product_id);
   pool.query(`
   WITH productStyle AS (
-    SELECT styles.productId as product_id, styles.id AS style_id, name, original_price, replace(sale_price, 'null', null) AS sale_price, default_style,
-    (SELECT json_agg(json_build_object('thumbnail_url', photos.thumbnail_url, 'url', photos.url)) FROM photos WHERE photos.styleId=styles.id) AS photos,
-    (SELECT json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.size)) FROM skus WHERE skus.styleId = styles.id) AS skus
+    SELECT styles.productId AS product_id, styles.id AS style_id, name, concat(original_price, '.00') AS original_price,
+           (
+             CASE
+               WHEN sale_price = 'null'
+                 THEN replace(sale_price, 'null', null)
+               ELSE concat(sale_price, '.00')
+             END
+            ) AS sale_price,
+            default_style,
+            (SELECT json_agg(json_build_object('thumbnail_url', photos.thumbnail_url, 'url', photos.url)) FROM photos WHERE photos.styleId=styles.id) AS photos,
+            (SELECT json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.size)) FROM skus WHERE skus.styleId = styles.id) AS skus
     FROM styles WHERE styles.productId=$1
     ORDER BY styles.id
   )

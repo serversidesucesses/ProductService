@@ -9,7 +9,7 @@ const pool = new Pool({
 const getProducts = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const count = parseInt(req.query.count) || 5;
-  pool.query(`SELECT name, slogan, description, category, concat(default_price, '.00') AS default_price FROM products ORDER BY id ASC LIMIT $1 OFFSET $2`, [count, count*(page - 1)])
+  pool.query(`SELECT id, name, slogan, description, category, concat(default_price, '.00') AS default_price FROM products ORDER BY id ASC LIMIT $1 OFFSET $2`, [count, count*(page - 1)])
   .then(({rows}) => res.status(200).json(rows))
   .catch(error => res.status(500).send('Internal Server Error'));
 }

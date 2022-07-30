@@ -12,6 +12,7 @@ app.get('/', (req, res) => {
 
 app.get('/products', db.getProducts)
 app.get('/products/:product_id', db.getProductInfoById)
+app.get('/products/:product_id/styles', db.getProductStyles)
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)

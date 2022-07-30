@@ -10,9 +10,10 @@ app.get('/', (req, res) => {
   response.json("Hey")
 })
 
-app.get('/products', db.getProducts)
-app.get('/products/:product_id', db.getProductInfoById)
-app.get('/products/:product_id/styles', db.getProductStyles)
+app.get('/products', db.getProducts);
+app.get('/products/:product_id', db.getProductInfoById);
+app.get('/products/:product_id/styles', db.getProductStyles);
+app.get('/products/:product_id/related', db.getRelatedProducts);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)

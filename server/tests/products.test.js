@@ -19,6 +19,16 @@ describe('return of data from the /products api endpoint', () => {
     });
   });
 
+  it('Returns dollars and cents amounts for the default_price property', () => {
+    axios.get('http://localhost:3000/products')
+      .then(({data}) => {
+        data.forEach(productObject => {
+          expect(productObject).toHaveProperty('default_price');
+          expect(productObject.default_price).toContain('.00')
+        });
+      });
+    });
+
   it('Receives the first 5 products when sending a get request to /products with no params', () => {
     axios.get('http://localhost:3000/products')
     .then(({data}) => {

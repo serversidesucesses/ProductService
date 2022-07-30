@@ -41,6 +41,34 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     });
   });
 
+  it('Returns dollars and cents amounts for the original_price property', () => {
+    const product_id = 1;
+    axios.get(`http://localhost:3000/products/${product_id}/styles`)
+      .then(({data}) => {
+        const { results } = data;
+        results.forEach(styleObj => {
+          expect(styleObj).toHaveProperty('original_price');
+          expect(styleObj.original_price).toContain('.00')
+        })
+      });
+  });
+
+  it('Either has null for the sale_price or a dollars and cents amounts', () => {
+    const product_id = 1;
+    axios.get(`http://localhost:3000/products/${product_id}/styles`)
+      .then(({data}) => {
+        const { results } = data;
+        results.forEach(styleObj => {
+          expect(styleObj).toHaveProperty('sale_price');
+          if(styleObj.sale_price) {
+            expect(styleObj.sale_price).toContain('.00');
+          } else {
+            expect(styleObj.sale_price).toBe(null);
+          }
+        })
+      });
+  });
+
   it('has default? property to be a boolean inside each object of results element', () => {
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)

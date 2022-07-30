@@ -7,10 +7,21 @@ describe('return of data from the products/:product_id api endpoint ', () => {
     const Features = [{ feature: 'Fabric', value: 'Canvas' }, { feature: 'Buttons', value: 'Brass' }]
   axios.get('http://localhost:3000/products/1')
     .then(({data}) => {
-      expect(data[0].id).toBe(1);
-      expect(data[0].name).toBe('Camo Onesie');
-      expect(data[0]).toHaveProperty('features');
-      expect(data[0].features).toEqual(Features);
+      expect(data.id).toBe(1);
+      expect(data.name).toBe('Camo Onesie');
+      expect(data).toHaveProperty('features');
+      expect(data.features).toEqual(Features);
+    });
+  });
+
+  it('Returns a product with an empty features array if there are no product features', () => {
+    const Features = []
+  axios.get('http://localhost:3000/products/10')
+    .then(({data}) => {
+      expect(data.id).toBe(10);
+      expect(data.name).toBe('Infinity Stone');
+      expect(data).toHaveProperty('features');
+      expect(data.features).toEqual(Features);
     });
   });
 });

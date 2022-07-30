@@ -5,7 +5,7 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
-      expect(data[0].product_id).toBe(product_id);
+      expect(data.product_id).toBe(product_id);
     });
   });
 
@@ -13,7 +13,7 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
-      expect(data[0]).toHaveProperty('results');
+      expect(data).toHaveProperty('results');
     });
   });
 
@@ -21,7 +21,7 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
-      expect(data[0]).toHaveProperty('results');
+      expect(data).toHaveProperty('results');
     });
   });
 
@@ -29,7 +29,7 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
-      const { results } = data[0];
+      const { results } = data;
       results.forEach(styleObj => {
         expect(styleObj).toHaveProperty('style_id');
         expect(styleObj).toHaveProperty('original_price');
@@ -45,7 +45,7 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
-      const { results } = data[0];
+      const { results } = data;
       results.forEach(styleObj => {
         expect(styleObj).toHaveProperty('default?');
         expect(typeof styleObj['default?']).toBe('boolean');
@@ -57,8 +57,8 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
-      expect(data[0]).toHaveProperty('results');
-      const { results } = data[0];
+      expect(data).toHaveProperty('results');
+      const { results } = data;
       results.forEach(styleObj => {
         expect(styleObj).toHaveProperty('photos');
         const { photos } = styleObj;
@@ -74,8 +74,8 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
-      expect(data[0]).toHaveProperty('results');
-      const { results } = data[0];
+      expect(data).toHaveProperty('results');
+      const { results } = data;
       results.forEach(styleObj => {
         expect(styleObj).toHaveProperty('skus');
         const { skus } = styleObj;
@@ -91,8 +91,8 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
-      expect(data[0]).toHaveProperty('results');
-      const { results } = data[0];
+      expect(data).toHaveProperty('results');
+      const { results } = data;
       results.forEach(styleObj => {
         expect(styleObj).toHaveProperty('skus');
         const { skus } = styleObj;

@@ -8,12 +8,11 @@ const pool = new Pool({
 const getProducts = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const count = parseInt(req.query.count) || 5;
-  pool.query(`SELECT * FROM products ORDER BY id ASC LIMIT $1 OFFSET $2`, [count, count*(page - 1)], (error, results) => {
-    error ? console.log(error)
-          : res.status(200).json(results.rows)
-
-  })
+  pool.query(`SELECT * FROM products ORDER BY id ASC LIMIT $1 OFFSET $2`, [count, count*(page - 1)])
+  .then(({rows}) => res.status(200).json(rows))
+  .catch(error => res.status(500).json(error));
 }
+
 
 const getProductInfoById = (req, res) => {
   const id = parseInt(req.params.product_id)
@@ -24,14 +23,33 @@ const getProductInfoById = (req, res) => {
     FROM products, product_features
       WHERE product_features.product_id = products.id
         AND products.id = $1
-    GROUP  BY 1, 2, 3, 4, 5, 6)
-  SELECT * FROM   product`, [id], (error, results) => {
-    error ? console.log(error)
-          : res.status(200).json(results.rows)
-  })
+    GROUP BY 1, 2, 3, 4, 5, 6)
+  SELECT * FROM product`, [id])
+  .then(({rows}) => res.status(200).json(rows))
+  .catch(error => res.status(500).json(error));
 }
+
+const getProductStyles = (req, res) => {
+  const id = parseInt(req.params.product_id);
+  pool.query(`
+  WITH productStyle AS (
+    SELECT styles.productId as product_id, styles.id AS style_id, name, original_price, sale_price, default_style,
+    (SELECT json_agg(json_build_object('thumbnail_url', photos.thumbnail_url, 'url', photos.url)) FROM photos WHERE photos.styleId=styles.id) AS photos,
+    (SELECT json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.quantity)) FROM skus WHERE skus.styleId = styles.id) AS skus
+    FROM styles WHERE styles.productId=$1
+    ORDER BY styles.id
+  )
+  SELECT product_id,
+  (json_agg(json_build_object('style_id', style_id,  'name', name,  'original_price', original_price, 'sale_price', sale_price, 'default?', default_style, 'photos', photos, 'skus', skus))) as results FROM productStyle
+   GROUP BY 1
+  `, [id])
+  .then(({rows}) => res.status(200).json(rows))
+  .catch(error => res.status(500).json(error));
+}
+
 
 module.exports = {
   getProducts,
   getProductInfoById,
+  getProductStyles
 }

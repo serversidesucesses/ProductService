@@ -16,7 +16,7 @@ CREATE TABLE styles (
   name text not null,
   sale_price text,
   original_price text not null,
-  default_style bit not null
+  default_style boolean not null default false
 );
 
 CREATE TABLE product_features (

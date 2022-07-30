@@ -18,23 +18,30 @@ const getProducts = (req, res) => {
 const getProductInfoById = (req, res) => {
   const id = parseInt(req.params.product_id)
   pool.query(
-  `WITH product AS
-    (SELECT products.id, name, slogan, description, category, default_price,
-      json_agg(json_build_object('feature', feature, 'value', value)) AS features
-    FROM products, product_features
-      WHERE product_features.product_id = products.id
-        AND products.id = $1
-    GROUP BY 1, 2, 3, 4, 5, 6)
+  `WITH product AS (
+  SELECT products.id, name, slogan, description, category, default_price,
+    (
+      CASE
+         WHEN products.id = $1 AND feature.product_id = $1
+         THEN (json_agg(json_build_object('feature', feature, 'value', value)))
+         ELSE '[]'
+      END
+    ) AS features
+  FROM products
+  LEFT JOIN product_features AS feature
+  ON products.id = feature.product_id
+  WHERE products.id = $1
+  GROUP BY 1,2,3,4,5,6, feature.product_id )
   SELECT * FROM product`, [id])
-  .then(({rows}) => res.status(200).json(rows))
-  .catch(error => res.status(500).send('Internal Server Error'));
+  .then(({rows}) => res.status(200).json(rows[0]))
+  .catch(error => res.status(500).send(error/*'Internal Server Error'*/));
 }
 
 const getProductStyles = (req, res) => {
   const id = parseInt(req.params.product_id);
   pool.query(`
   WITH productStyle AS (
-    SELECT styles.productId as product_id, styles.id AS style_id, name, original_price, sale_price, default_style,
+    SELECT styles.productId as product_id, styles.id AS style_id, name, original_price, replace(sale_price, 'null', null) AS sale_price, default_style,
     (SELECT json_agg(json_build_object('thumbnail_url', photos.thumbnail_url, 'url', photos.url)) FROM photos WHERE photos.styleId=styles.id) AS photos,
     (SELECT json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.size)) FROM skus WHERE skus.styleId = styles.id) AS skus
     FROM styles WHERE styles.productId=$1
@@ -44,7 +51,7 @@ const getProductStyles = (req, res) => {
   (json_agg(json_build_object('style_id', style_id,  'name', name,  'original_price', original_price, 'sale_price', sale_price, 'default?', default_style, 'photos', photos, 'skus', skus))) as results FROM productStyle
    GROUP BY 1
   `, [id])
-  .then(({rows}) => res.status(200).json(rows))
+  .then(({rows}) => res.status(200).json(rows[0]))
   .catch(error => res.status(500).send('Internal Server Error'));
 }
 

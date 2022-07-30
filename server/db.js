@@ -11,7 +11,7 @@ const getProducts = (req, res) => {
   const count = parseInt(req.query.count) || 5;
   pool.query(`SELECT * FROM products ORDER BY id ASC LIMIT $1 OFFSET $2`, [count, count*(page - 1)])
   .then(({rows}) => res.status(200).json(rows))
-  .catch(error => res.status(500).json(error));
+  .catch(error => res.status(500).send('Internal Server Error'));
 }
 
 
@@ -27,7 +27,7 @@ const getProductInfoById = (req, res) => {
     GROUP BY 1, 2, 3, 4, 5, 6)
   SELECT * FROM product`, [id])
   .then(({rows}) => res.status(200).json(rows))
-  .catch(error => res.status(500).json(error));
+  .catch(error => res.status(500).send('Internal Server Error'));
 }
 
 const getProductStyles = (req, res) => {
@@ -36,7 +36,7 @@ const getProductStyles = (req, res) => {
   WITH productStyle AS (
     SELECT styles.productId as product_id, styles.id AS style_id, name, original_price, sale_price, default_style,
     (SELECT json_agg(json_build_object('thumbnail_url', photos.thumbnail_url, 'url', photos.url)) FROM photos WHERE photos.styleId=styles.id) AS photos,
-    (SELECT json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.quantity)) FROM skus WHERE skus.styleId = styles.id) AS skus
+    (SELECT json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.size)) FROM skus WHERE skus.styleId = styles.id) AS skus
     FROM styles WHERE styles.productId=$1
     ORDER BY styles.id
   )
@@ -45,14 +45,14 @@ const getProductStyles = (req, res) => {
    GROUP BY 1
   `, [id])
   .then(({rows}) => res.status(200).json(rows))
-  .catch(error => res.status(500).json(error));
+  .catch(error => res.status(500).send('Internal Server Error'));
 }
 
 const getRelatedProducts = (req, res) => {
   const id = parseInt(req.params.product_id);
   pool.query(`SELECT json_agg(related_product_id) AS related_products FROM related_products WHERE current_product_id = $1`, [id])
   .then(({rows}) => res.status(200).json(rows[0].related_products))
-  .catch(error => res.status(500).json(error));
+  .catch(error => res.status(500).send('Internal Server Error'));
 }
 
 module.exports = {

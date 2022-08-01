@@ -70,7 +70,7 @@ const getProductStyles = (req, res) => {
                ELSE concat(sale_price, '.00')
              END
             ) AS sale_price,
-            default_style,
+            default_style AS "default?",
            (SELECT COALESCE(json_agg(row_to_json(photo)), '[]') from (SELECT url, thumbnail_url from photos where photos.styleId=styles.id) AS photo) AS photos,
            (SELECT COALESCE(json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.size)), json_build_object('null', json_build_object('quantity', null, 'size', null))) FROM skus WHERE skus.styleId = styles.id) AS skus
     FROM styles WHERE styles.productId = $1
@@ -107,7 +107,7 @@ const getRelatedProducts = (req, res) => {
   pool.query(`
   SELECT
   COALESCE(json_agg(related_product_id), '[]') AS related_products FROM related_products WHERE current_product_id = $1`, [id])
-  .then(({rows}) => rows.length > 0 ? res.status(200).json(rows[0]) : res.status(404).send('Product Not Found.'))
+  .then(({rows}) => rows.length > 0 ? res.status(200).json(rows[0].related_products) : res.status(404).send('Product Not Found.'))
   .catch(error => res.status(500).send('Internal Server Error'));
 }
 

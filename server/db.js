@@ -18,24 +18,45 @@ const getProducts = (req, res) => {
 const getProductInfoById = (req, res) => {
   const id = parseInt(req.params.product_id)
   pool.query(
- `WITH product AS (
-  SELECT products.id, name, slogan, description, category, concat(default_price, '.00') AS default_price,
-    (
-      CASE
-         WHEN products.id = $1 AND feature.product_id = $1
-           THEN (json_agg(json_build_object('feature', feature, 'value', value)))
-         ELSE '[]'
-      END
-    ) AS features
+ `SELECT
+    id,
+    name,
+    slogan,
+    description,
+    category,
+    concat(default_price, '.00') AS default_price,
+    COALESCE(features, '[]') AS features
   FROM products
-  LEFT JOIN product_features AS feature
-  ON products.id = feature.product_id
-  WHERE products.id = $1
-  GROUP BY 1,2,3,4,5,6, feature.product_id )
-  SELECT * FROM product`, [id])
-  .then(({rows}) => res.status(200).json(rows[0]))
-  .catch(error => res.status(500).send(error/*'Internal Server Error'*/));
+    CROSS JOIN (
+      SELECT json_agg(row_to_json(features_json)) AS features
+        FROM (
+               SELECT
+                  feature,
+                  value
+                  FROM product_features
+               WHERE product_features.product_id = $1
+              ) AS features_json
+    ) AS result
+  WHERE products.id = $1`, [id])
+  .then(({rows}) => rows.length > 0 ? res.status(200).json(rows[0]) : res.status(404).send('Product Not Found.'))
+  .catch(error => res.status(500).send('Internal Server Error'));
 }
+//OLD Products query
+// WITH product AS (
+//   SELECT products.id, name, slogan, description, category, concat(default_price, '.00') AS default_price,
+//     (
+//       CASE
+//          WHEN products.id = $1 AND feature.product_id = $1
+//            THEN (json_agg(json_build_object('feature', feature, 'value', value)))
+//          ELSE '[]'
+//       END
+//     ) AS features
+//   FROM products
+//   LEFT JOIN product_features AS feature
+//   ON products.id = feature.product_id
+//   WHERE products.id = $1
+//   GROUP BY 1,2,3,4,5,6, feature.product_id )
+//   SELECT * FROM product`
 
 const getProductStyles = (req, res) => {
   const id = parseInt(req.params.product_id);
@@ -57,7 +78,7 @@ const getProductStyles = (req, res) => {
   )
   SELECT $2 as product_id, COALESCE(json_agg(row_to_json(productStyle)), '[]') as results FROM productStyle
   `, [id, id.toString()])
-  .then(({rows}) => res.status(200).json(rows[0]))
+  .then(({rows}) => rows.length > 0 ? res.status(200).json(rows[0]) : res.status(404).send('Product Not Found.'))
   .catch(error => res.status(500).send('Internal Server Error'));
 }
 
@@ -86,7 +107,7 @@ const getRelatedProducts = (req, res) => {
   pool.query(`
   SELECT
   COALESCE(json_agg(related_product_id), '[]') AS related_products FROM related_products WHERE current_product_id = $1`, [id])
-  .then(({rows}) => res.status(200).json(rows[0].related_products))
+  .then(({rows}) => rows.length > 0 ? res.status(200).json(rows[0]) : res.status(404).send('Product Not Found.'))
   .catch(error => res.status(500).send('Internal Server Error'));
 }
 

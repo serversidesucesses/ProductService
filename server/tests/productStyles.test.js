@@ -5,8 +5,9 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     const product_id = 1;
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
-      expect(data.product_id).toBe(product_id);
-    });
+      expect(data.product_id).toBe(product_id.toString());
+    })
+    .catch(error => Error(error));
   });
 
   it('has a property of results', () => {
@@ -14,7 +15,8 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
       expect(data).toHaveProperty('results');
-    });
+    })
+    .catch(error => Error(error));
   });
 
   it('contain\'s style data inside each object property of results', () => {
@@ -22,7 +24,8 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
     axios.get(`http://localhost:3000/products/${product_id}/styles`)
     .then(({data}) => {
       expect(data).toHaveProperty('results');
-    });
+    })
+    .catch(error => Error(error));
   });
 
   it('contain\'s name, original_price, sale_price, default?, photo, and sku properties inside each object of results element', () => {
@@ -38,7 +41,8 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
         expect(styleObj).toHaveProperty('photos');
         expect(styleObj).toHaveProperty('skus');
       });
-    });
+    })
+    .catch(error => Error(error));
   });
 
   it('Returns dollars and cents amounts for the original_price property', () => {
@@ -133,4 +137,24 @@ describe('return of data from the products/:product_id/styles api endpoint', () 
       });
     });
   });
+
+  it('Returns product not found as the response with a 404 status code if the product id does not exist', () => {
+    axios.get('http://localhost:3000/products/2147483647/styles')
+      .then(({data}) => {
+      })
+      .catch(({response}) => {
+        expect(response.status).toBe(404);
+        expect(response.data).toBe('Product Not Found.');
+      });
+    });
+
+    it('Returns internal server error if the product id is out of range', () => {
+      axios.get('http://localhost:3000/products/2147483648/styles')
+        .then(({data}) => {
+        })
+        .catch(({response}) => {
+          expect(response.status).toBe(500);
+          expect(response.data).toBe('Internal Server Error');
+        });
+      });
 });

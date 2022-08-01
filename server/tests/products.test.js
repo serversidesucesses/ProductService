@@ -16,7 +16,8 @@ describe('return of data from the /products api endpoint', () => {
         expect(productObject).toHaveProperty('category');
         expect(productObject).toHaveProperty('default_price');
       });
-    });
+    })
+    .catch(error => Error(error));
   });
 
   it('Returns dollars and cents amounts for the default_price property', () => {
@@ -26,7 +27,8 @@ describe('return of data from the /products api endpoint', () => {
           expect(productObject).toHaveProperty('default_price');
           expect(productObject.default_price).toContain('.00')
         });
-      });
+      })
+      .catch(error => Error(error));
     });
 
   it('Receives the first 5 products when sending a get request to /products with no params', () => {
@@ -44,7 +46,8 @@ describe('return of data from the /products api endpoint', () => {
       expect(data[2].name).toBe('Morning Joggers');
       expect(data[3].name).toBe('Slacker\'s Slacks');
       expect(data[4].name).toBe('Heir Force Ones');
-    });
+    })
+    .catch(error => Error(error));
   });
 
   it('Receives the next 5 products when sending a get request to /products with the param of page set to 2', () => {
@@ -62,14 +65,16 @@ describe('return of data from the /products api endpoint', () => {
       expect(data[2].name).toBe('YEasy 350');
       expect(data[3].name).toBe('Summer Shoes');
       expect(data[4].name).toBe('Infinity Stone');
-    });
+    })
+    .catch(error => Error(error));
   });
 
   it('Receives the 500 products when sending a get request to /products with the param of count set to 500', () => {
     axios.get('http://localhost:3000/products', {params: {count: 500}})
     .then(({data}) => {
     expect(data.length).toBe(500);
-    });
+    })
+    .catch(error => Error(error));
   });
 
   it('Receives the 500 products starting from id 501 to 1000 when sending a get request to /products with the param of count set to 500 and page set to 2', () => {
@@ -78,6 +83,7 @@ describe('return of data from the /products api endpoint', () => {
     expect(data.length).toBe(500);
     expect(data[0].id).toBe(501);
     expect(data[data.length-1].id).toBe(1000);
-    });
+    })
+    .catch(error => Error(error))
   });
 });

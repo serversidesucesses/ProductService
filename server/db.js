@@ -41,7 +41,7 @@ const getProductStyles = (req, res) => {
   const id = parseInt(req.params.product_id);
   pool.query(`
   WITH productStyle AS (
-    SELECT styles.productId AS product_id, styles.id AS style_id, name, concat(original_price, '.00') AS original_price,
+    SELECT styles.id AS style_id, name, concat(original_price, '.00') AS original_price,
            (
              CASE
                WHEN sale_price = 'null'
@@ -50,18 +50,36 @@ const getProductStyles = (req, res) => {
              END
             ) AS sale_price,
             default_style,
-            (SELECT json_agg(json_build_object('thumbnail_url', photos.thumbnail_url, 'url', photos.url)) FROM photos WHERE photos.styleId=styles.id) AS photos,
-            (SELECT json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.size)) FROM skus WHERE skus.styleId = styles.id) AS skus
-    FROM styles WHERE styles.productId=$1
+           (SELECT COALESCE(json_agg(row_to_json(photo)), '[]') from (SELECT url, thumbnail_url from photos where photos.styleId=styles.id) AS photo) AS photos,
+           (SELECT COALESCE(json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.size)), json_build_object('null', json_build_object('quantity', null, 'size', null))) FROM skus WHERE skus.styleId = styles.id) AS skus
+    FROM styles WHERE styles.productId = $1
     ORDER BY styles.id
   )
-  SELECT product_id,
-  (json_agg(json_build_object('style_id', style_id,  'name', name,  'original_price', original_price, 'sale_price', sale_price, 'default?', default_style, 'photos', photos, 'skus', skus))) as results FROM productStyle
-   GROUP BY 1
-  `, [id])
+  SELECT $2 as product_id, COALESCE(json_agg(row_to_json(productStyle)), '[]') as results FROM productStyle
+  `, [id, id.toString()])
   .then(({rows}) => res.status(200).json(rows[0]))
   .catch(error => res.status(500).send('Internal Server Error'));
 }
+
+//OLD query
+// WITH productStyle AS (
+//   SELECT styles.productId AS product_id, styles.id AS style_id, name, concat(original_price, '.00') AS original_price,
+//          (
+//            CASE
+//              WHEN sale_price = 'null'
+//                THEN replace(sale_price, 'null', null)
+//              ELSE concat(sale_price, '.00')
+//            END
+//           ) AS sale_price,
+//           default_style,
+//           (SELECT json_agg(json_build_object('thumbnail_url', photos.thumbnail_url, 'url', photos.url)) FROM photos WHERE photos.styleId=styles.id) AS photos,
+//           (SELECT COALESCE(json_object_agg(skus.id, json_build_object('quantity', skus.quantity, 'size', skus.size)), json_build_object('null', json_build_object('quantity', null, 'size', null))) FROM skus WHERE skus.styleId = styles.id) AS skus
+//   FROM styles WHERE styles.productId=$1
+//   ORDER BY styles.id
+// )
+// SELECT product_id,
+// (json_agg(json_build_object('style_id', style_id,  'name', name,  'original_price', original_price, 'sale_price', sale_price, 'default?', default_style, 'photos', photos, 'skus', skus))) as results FROM productStyle
+//  GROUP BY 1
 
 const getRelatedProducts = (req, res) => {
   const id = parseInt(req.params.product_id);

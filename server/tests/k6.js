@@ -52,7 +52,7 @@ let scenarios = {
     rate: 6000,
     timeUnit: '1s',
     duration: '30s',
-    preAllocatedVUs: 100,
+    preAllocatedVUs: 250,
     maxVUs: 20000,
     exec: 'constant_rate_products'
   },
@@ -61,7 +61,7 @@ let scenarios = {
     rate: 6000,
     timeUnit: '1s',
     duration: '30s',
-    preAllocatedVUs: 100,
+    preAllocatedVUs: 250,
     maxVUs: 20000,
     exec: 'constant_rate_product_details'
   },
@@ -70,7 +70,7 @@ let scenarios = {
     rate: 6000,
     timeUnit: '1s',
     duration: '30s',
-    preAllocatedVUs: 100,
+    preAllocatedVUs: 250,
     maxVUs: 20000,
     exec: 'constant_rate_styles'
   },
@@ -79,19 +79,13 @@ let scenarios = {
     rate: 6000,
     timeUnit: '1s',
     duration: '30s',
-    preAllocatedVUs: 100,
+    preAllocatedVUs: 250,
     maxVUs: 20000,
     exec: 'constant_rate_related'
   },
 }
 
 export const options = {
-  ext: {
-    loadimpact: {
-      distribution: { 'amazon:us:ashburn': { loadZone: 'amazon:us:ashburn', percent: 100 } },
-      apm: []
-    }
-  },
   thresholds: {
     http_req_duration: ['p(99)<=2000', 'p(95)<=1500', 'p(90)<=1000'],
     http_req_failed: ['rate<=0.01']

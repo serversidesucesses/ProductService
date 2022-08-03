@@ -7,6 +7,10 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
+app.get('/loaderio-6975f53fc9210147e1b8c34fd8787b3a/', (req, res) => {
+  res.status(200).send('loaderio-6975f53fc9210147e1b8c34fd8787b3a')
+});
+
 app.get('/products', db.getProducts);
 app.get('/products/:product_id', db.getProductInfoById);
 app.get('/products/:product_id/styles', db.getProductStyles);

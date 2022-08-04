@@ -15,6 +15,11 @@ app.get('/loaderio-df7c0532870ca07e9decc1388a8cc47b/', (req, res) => {
   res.status(200).send('loaderio-df7c0532870ca07e9decc1388a8cc47b')
 });
 
+app.get('/loaderio-4c9cff767d782ee61eceb58a64b93a5f/', (req, res) => {
+  res.status(200).send('loaderio-4c9cff767d782ee61eceb58a64b93a5f')
+});
+
+
 
 
 app.get('/products', db.getProducts);

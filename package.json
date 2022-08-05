@@ -8,7 +8,6 @@
   },
   "scripts": {
     "test": "jest",
-    "start": "node server/server.js",
-    "prod:start": "pm2-runtime server/server.js"
+    "start": "node server/server.js"
   }
 }

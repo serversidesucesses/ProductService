@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { Pool } = require('pg');
+const io = require('@pm2/io');
 const pool = new Pool({
   user: process.env.DB_USERNAME,
   host: process.env.DB_HOSTNAME,
@@ -7,7 +8,19 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT || 5432,
 })
+
+const currentReqs = io.counter({
+  name: 'Realtime request count',
+  id: 'app/realtime/requests'
+});
+
+
+
 const getProducts = (req, res) => {
+  currentReqs.inc();
+  req.on('end', () => {
+    currentReqs.dec();
+  })
   const page = parseInt(req.query.page) || 1;
   const count = parseInt(req.query.count) || 5;
   pool.query(`SELECT id, name, slogan, description, category, concat(default_price, '.00') AS default_price FROM products ORDER BY id ASC LIMIT $1 OFFSET $2`, [count, count*(page - 1)])
@@ -17,7 +30,11 @@ const getProducts = (req, res) => {
 
 
 const getProductInfoById = (req, res) => {
-  const id = parseInt(req.params.product_id)
+  const id = parseInt(req.params.product_id);
+  currentReqs.inc();
+  req.on('end', () => {
+    currentReqs.dec();
+  })
   pool.query(
  `SELECT
     id,
@@ -41,6 +58,8 @@ const getProductInfoById = (req, res) => {
   WHERE products.id = $1`, [id])
   .then(({rows}) => rows.length > 0 ? res.status(200).json(rows[0]) : res.status(404).send('Product Not Found.'))
   .catch(error => res.status(500).send('Internal Server Error'));
+
+
 }
 //OLD Products query
 // WITH product AS (
@@ -60,6 +79,10 @@ const getProductInfoById = (req, res) => {
 //   SELECT * FROM product`
 
 const getProductStyles = (req, res) => {
+  currentReqs.inc();
+  req.on('end', () => {
+    currentReqs.dec();
+  })
   const id = parseInt(req.params.product_id);
   pool.query(`
   WITH productStyle AS (
@@ -104,6 +127,10 @@ const getProductStyles = (req, res) => {
 //  GROUP BY 1
 
 const getRelatedProducts = (req, res) => {
+  currentReqs.inc();
+  req.on('end', () => {
+    currentReqs.dec();
+  })
   const id = parseInt(req.params.product_id);
   pool.query(`
   SELECT
